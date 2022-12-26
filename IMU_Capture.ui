@@ -112,7 +112,7 @@
      <string>Start</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="samples">
+   <widget class="QLineEdit" name="Samples">
     <property name="geometry">
      <rect>
       <x>50</x>

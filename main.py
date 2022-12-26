@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import *
 import numpy as np
 import os, pathlib
 from PyQt5.QtCore import QDir, QThread, QMutex, QObject, pyqtSignal
-import pyqtgraph
+import pyqtgraph as pg
 from pyqtgraph import plot
 import pandas as pd
 
@@ -38,6 +38,7 @@ class Save_raw_data(QObject):
 
     def __init__(self):
         super().__init__()
+        self.samples = int(self.Samples.text())
 
     def save_data(self, data):
         filename = self.fileName.text()
@@ -45,9 +46,11 @@ class Save_raw_data(QObject):
         if not filename.endswith('.csv'):
             filename += '.csv'
 
-        file = open(filename, 'a')
+        line = 0
+        while line < self.samples:
+            file = open(filename, 'a')
 
-        file.write(data + '\n')
+            file.write(data + '\n')
 
         file.close()
 
@@ -65,6 +68,9 @@ class Record(IMU_Capture_UI.Ui_MainWindow):
 
         self.baudrate.addItems(['9600', '115200'])
         self.baudrate.setCurrentText('9600')
+        self.fileName.setText('punch.csv')
+        self.path.setText(str(os.getcwd()))
+        self.Samples.setText('100')
         
         self.baud = self.baudrate.currentText()
         self.portlist = find_USB_device()
@@ -86,12 +92,11 @@ class Record(IMU_Capture_UI.Ui_MainWindow):
         windowwidth = 100
         X = np.zeros((windowwidth, 9))
 
-        while self.ser.isOpen() and line <= 150:
+        while self.ser.isOpen() and line <= 1000:
 
             getData = str(self.ser.readline())
             self.data = getData[2:][:-5]
             data = self.data.split(',')
-            # print(data)
             if line >= 1:
                 data_arr = np.asarray([float(_) for _ in data])
                 datas.append(data_arr)
@@ -134,11 +139,11 @@ class Record(IMU_Capture_UI.Ui_MainWindow):
         thread.finished.connect(thread.deleteLater)
         return thread
 
-    def plot(self, data):
+    def plot(self, data, pen):
         self.graphicsView.setBackground('w')
         self.graphicsView.showGrid(x = True, y = True)
-        self.graphicsView.plot(data, clear = False)
-        pyqtgraph.QtWidgets.QApplication.processEvents()
+        self.graphicsView.plot(data, clear = False, pen = pen)
+        pg.QtWidgets.QApplication.processEvents()
 
     def get_path(self):
         self.dirpath = QDir.currentPath()
@@ -146,12 +151,17 @@ class Record(IMU_Capture_UI.Ui_MainWindow):
         self.path.setText(self.file_path)
 
     def open_file(self):
-        path = os.path.join(self.file_path, self.fileName.text())
+        filename = self.fileName.text()
+
+        if not filename.endswith('.csv'):
+            filename += '.csv'
+        path = os.path.join(self.path.text(), filename)
         print(path)
         data = pd.read_csv(path)
         data = data.transpose()
+        pen = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
         for i in range(data.shape[0]):
-            self.plot(data.iloc[i])
+            self.plot(data.iloc[i], pen = pen[i])
     
     def stop(self):
         self.ser.close()
@@ -163,4 +173,4 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = Record()
     window.mainWindow.show()
-    app.exec()
+    app.exec()    
