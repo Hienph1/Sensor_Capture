@@ -66,8 +66,8 @@ class Record(IMU_Capture_UI.Ui_MainWindow):
         self.pushButton_openFile.clicked.connect(self.open_file)
 
         self.baudrate.addItems(['9600', '115200'])
-        self.baudrate.setCurrentText('9600')
-        self.fileName.setText('punch.csv')
+        self.baudrate.setCurrentText('115200')
+        self.fileName.setText('test.csv')
         self.path.setText(str(os.getcwd()))
         self.Samples.setText('100')
         
@@ -86,26 +86,24 @@ class Record(IMU_Capture_UI.Ui_MainWindow):
             print('Cannot open port')
         print('Connected')
 
-        datas = []
         line = 0
         windowwidth = 100
-        X = np.zeros((windowwidth, 9))
+        X = np.linspace(0, 0, windowwidth)
 
-        while self.ser.isOpen() and line <= 100:
+        while self.ser.isOpen() and line <= 49:
 
             getData = str(self.ser.readline())
             self.data = getData[2:][:-5]
             data = self.data.split(',')
-            if line >= 1:
-                data_arr = np.asarray([float(_) for _ in data])
-                datas.append(data_arr)
-                self.arr = np.array(datas)
+            print(self.data)
+            
+            data_arr = np.asarray([float(_) for _ in data])
 
-                X[:-1] = X[1:]
-                X[-1] = data_arr
-                self.graphicsView.clear()
-                for i in range(9):    
-                    self.plot(X[:, i])
+            # X[:-1] = X[1:]
+            # X[-1] = data_arr
+            #     self.graphicsView.clear()
+                # for i in range(9):    
+                #     self.plot(X[:, i])
                 
             if self.checkBox_saving.isChecked():
                 thread = self.create_thread(self.data, filename = self.fileName.text())
