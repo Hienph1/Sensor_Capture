@@ -86,7 +86,6 @@ class Record(IMU_Capture_UI.Ui_MainWindow):
             print('Cannot open port')
         print('Connected')
 
-        datas = []
         line = 0
         windowwidth = 100
         X = np.zeros((windowwidth, 9))
@@ -98,8 +97,6 @@ class Record(IMU_Capture_UI.Ui_MainWindow):
             data = self.data.split(',')
             if line >= 1:
                 data_arr = np.asarray([float(_) for _ in data])
-                datas.append(data_arr)
-                self.arr = np.array(datas)
 
                 X[:-1] = X[1:]
                 X[-1] = data_arr

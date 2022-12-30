@@ -97,13 +97,12 @@ class Record(IMU_Capture_UI.Ui_MainWindow):
             data = self.data.split(',')
             print(self.data)
             
-            data_arr = np.asarray([float(_) for _ in data])
-
-            # X[:-1] = X[1:]
-            # X[-1] = data_arr
-            #     self.graphicsView.clear()
-                # for i in range(9):    
-                #     self.plot(X[:, i])
+            data_arr = np.asarray([data])
+            
+            X[:-1] = X[1:]
+            X[-1] = data_arr
+            self.graphicsView.clear()
+            self.plot(X)
                 
             if self.checkBox_saving.isChecked():
                 thread = self.create_thread(self.data, filename = self.fileName.text())
